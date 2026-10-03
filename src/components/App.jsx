@@ -13,7 +13,8 @@ function App() {
 
     return (
         <div>
-            <h1 className="titulo">RolêRadar</h1>
+            <h1 className="titulo"><i className="pi pi-map-marker"></i>
+                RolêRadar</h1>
             <p style={estiloSubtitulo}>
                 Descubra o que existe perto de você
             </p>

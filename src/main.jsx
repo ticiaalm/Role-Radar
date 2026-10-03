@@ -1,10 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { PrimeReactProvider } from '@primereact/core'
+import 'primeicons/primeicons.css'
+import 'primeflex/primeflex.css'
 import App from './components/App.jsx'
 import './styles.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <PrimeReactProvider>
+      <App />
+    </PrimeReactProvider>
   </StrictMode>,
 )
