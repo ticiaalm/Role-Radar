@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import Cartao from "./Cartao"
 import Creditos from "./Creditos"
 import Loading from "./Loading"
+import MeuPonto from "./MeuPonto"
 
 const estiloSubtitulo = {
     color: '#0c4707',
@@ -18,7 +19,6 @@ export default class App extends React.Component {
         longitude: null,
         horarioLocalizacao: null,
         mensagemDeErro: null
-
     }
 
     componentDidMount() {
@@ -69,12 +69,16 @@ export default class App extends React.Component {
                         !this.state.latitude ?
                             <Loading mensagem="Aguardando permissão de localização..." />
                         :
-                        <p className="text-center font-medium">
-                            Localização obtida: {this.state.latitude}, {this.state.longitude}
-                        </p>
+                        <Cartao>
+                            <MeuPonto
+                                latitude={this.state.latitude}
+                                longitude={this.state.longitude}
+                                horarioLocalizacao={this.state.horarioLocalizacao}
+                                onAtualizar={this.obtemLocalizacao} />
+                        </Cartao>
                     }
                 </div>
-
+                <br />
                 <footer>
                     RolêRadar © {obterAno()}
                 </footer>
