@@ -3,6 +3,8 @@ import Cartao from "./Cartao"
 import Creditos from "./Creditos"
 import Loading from "./Loading"
 import MeuPonto from "./MeuPonto"
+import geoapifyClient from "../utils/geoapifyClient"
+import { Button } from "primereact/button"
 
 const estiloSubtitulo = {
     color: '#0c4707',
@@ -43,45 +45,64 @@ export default class App extends React.Component {
         )
     }
 
+    onBuscaRealizada = async (categoria, raio) => {
+        const result = await geoapifyClient.get('/places', {
+            params: {
+                categories: categoria,
+                filter: `circle:${this.state.longitude},${this.state.latitude},${raio}`,
+                bias: `proximity:${this.state.longitude},${this.state.latitude}`,
+                limit: 20
+            }
+        })
+        console.log(result.data.features)
+    }
+
     render() {
         return (
-            <div className='flex flex-column align-items-center p-3'>
-                <div className='flex flex-column align-items-center gap-1'>
-                    <div className='flex align-items-center gap-2'>
-                        <h1 className="titulo"><i className="pi pi-map-marker"></i>
-                            RolêRadar
-                        </h1>
+            <div>
+                <div className='flex flex-column align-items-center p-3'>
+                    <div className='flex flex-column align-items-center gap-1'>
+                        <div className='flex align-items-center gap-2'>
+                            <h1 className="titulo"><i className="pi pi-map-marker"></i>
+                                RolêRadar
+                            </h1>
+                        </div>
                     </div>
-                </div>
-                <div className="flex align-items-center">
-                    <p style={estiloSubtitulo}>Descubra o que existe perto de você</p>
-                </div>
+                    <div className="flex align-items-center">
+                        <p style={estiloSubtitulo}>Descubra o que existe perto de você</p>
+                    </div>
 
-                <Creditos />
+                    <Creditos />
 
-                <div className="mt-4">
-                    {
+                    <div className="mt-4"> {
                         this.state.mensagemDeErro ?
                             <p className="border border-round p-3 text-center text-red-500">
                                 {this.state.mensagemDeErro}
                             </p>
-                        :
-                        !this.state.latitude ?
-                            <Loading mensagem="Aguardando permissão de localização..." />
-                        :
-                        <Cartao>
-                            <MeuPonto
-                                latitude={this.state.latitude}
-                                longitude={this.state.longitude}
-                                horarioLocalizacao={this.state.horarioLocalizacao}
-                                onAtualizar={this.obtemLocalizacao} />
-                        </Cartao>
+                            :
+                            !this.state.latitude ?
+                                <Loading mensagem="Aguardando permissão de localização..." />
+                            :
+                                <div>
+                                    <Cartao cabecalho="Você está aqui!">
+                                        <MeuPonto
+                                            latitude={this.state.latitude}
+                                            longitude={this.state.longitude}
+                                            horarioLocalizacao={this.state.horarioLocalizacao}
+                                            onAtualizar={this.obtemLocalizacao} />
+                                    </Cartao>
+                                    <br />
+                                    <Button onClick={() => this.onBuscaRealizada('catering.cafe', 1000)}>
+                                        Testar busca
+                                    </Button>
+                                </div>
                     }
+                    </div>
+                    <br />
+                    <footer>
+                        RolêRadar © {obterAno()}
+                    </footer>
                 </div>
-                <br />
-                <footer>
-                    RolêRadar © {obterAno()}
-                </footer>
             </div>
         )
     }
