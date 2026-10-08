@@ -5,9 +5,10 @@ import Loading from "./Loading"
 import MeuPonto from "./MeuPonto"
 import geoapifyClient from "../utils/geoapifyClient"
 import { Button } from "primereact/button"
+import Busca from "./Busca"
 
 const estiloSubtitulo = {
-    color: '#0c4707',
+    color: '#626262',
     fontSize: '20px',
 }
 
@@ -33,7 +34,8 @@ export default class App extends React.Component {
                 this.setState({
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
-                    horarioLocalizacao: Date.now()
+                    horarioLocalizacao: Date.now(),
+                    mensagemDeErro: null
                 })
             },
             (erro) => {
@@ -46,7 +48,7 @@ export default class App extends React.Component {
     }
 
     onBuscaRealizada = async (categoria, raio) => {
-        const result = await geoapifyClient.get('/places', {
+        const result = await geoapifyClient.get("/places", {
             params: {
                 categories: categoria,
                 filter: `circle:${this.state.longitude},${this.state.latitude},${raio}`,
@@ -63,7 +65,7 @@ export default class App extends React.Component {
                 <div className='flex flex-column align-items-center p-3'>
                     <div className='flex flex-column align-items-center gap-1'>
                         <div className='flex align-items-center gap-2'>
-                            <h1 className="titulo"><i className="pi pi-map-marker"></i>
+                            <h1 className="titulo"><i className="pi pi-map-marker pin"></i>
                                 RolêRadar
                             </h1>
                         </div>
@@ -83,19 +85,21 @@ export default class App extends React.Component {
                             !this.state.latitude ?
                                 <Loading mensagem="Aguardando permissão de localização..." />
                             :
-                                <div>
-                                    <Cartao cabecalho="Você está aqui!">
-                                        <MeuPonto
-                                            latitude={this.state.latitude}
-                                            longitude={this.state.longitude}
-                                            horarioLocalizacao={this.state.horarioLocalizacao}
-                                            onAtualizar={this.obtemLocalizacao} />
+                            <div>
+                                <Cartao cabecalho="Você está aqui!">
+                                    <MeuPonto
+                                        latitude={this.state.latitude}
+                                        longitude={this.state.longitude}
+                                        horarioLocalizacao={this.state.horarioLocalizacao}
+                                        onAtualizar={this.obtemLocalizacao} />
+                                </Cartao>
+                                <br />
+                                <div className="mt-3">
+                                    <Cartao cabecalho="O que você procura?">
+                                        <Busca onBuscaRealizada={this.onBuscaRealizada} />
                                     </Cartao>
-                                    <br />
-                                    <Button onClick={() => this.onBuscaRealizada('catering.cafe', 1000)}>
-                                        Testar busca
-                                    </Button>
                                 </div>
+                            </div>
                     }
                     </div>
                     <br />

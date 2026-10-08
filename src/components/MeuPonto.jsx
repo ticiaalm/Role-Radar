@@ -25,7 +25,7 @@ export default class MeuPonto extends Component {
     render() {
         return (
             <div>
-                <img className="w-full" src={`https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=600&height=300&center=lonlat:${this.props.latitude},${this.props.longitude}&zoom=16&marker=lonlat:${this.props.latitude},${this.props.longitude};color:%23d32f2f;size:48&apiKey=${GEOAPIFY_KEY}`}
+                <img className="w-full" src={`https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=600&height=300&center=lonlat:${this.props.longitude},${this.props.latitude}&zoom=16&marker=lonlat:${this.props.longitude},${this.props.latitude};color:%23d32f2f;size:48&apiKey=${GEOAPIFY_KEY}`}
                 alt="Mapa da sua localização" />
                 <p>
                     {`Latitude: ${this.props.latitude.toFixed(4)} | Longitude: ${this.props.longitude.toFixed(4)}`}
