@@ -6,6 +6,7 @@ import MeuPonto from "./MeuPonto"
 import geoapifyClient from "../utils/geoapifyClient"
 import Busca from "./Busca"
 import ListaLugares from "./ListaLugares"
+import MapaRadar from "./MapaRadar"
 
 const estiloSubtitulo = {
     color: '#626262',
@@ -22,7 +23,10 @@ export default class App extends React.Component {
         longitude: null,
         horarioLocalizacao: null,
         mensagemDeErro: null,
-        lugares: null
+        lugares: null,
+        buscando: false,
+        erroBusca: null,
+        raioBuscado: null
     }
 
     componentDidMount() {
@@ -49,21 +53,33 @@ export default class App extends React.Component {
     }
 
     onBuscaRealizada = async (categoria, raio) => {
-        try {
-            const result = await geoapifyClient.get("/places", {
-                params: {
-                    categories: categoria,
-                    filter: `circle:${this.state.longitude},${this.state.latitude},${raio}`,
-                    bias: `proximity:${this.state.longitude},${this.state.latitude}`,
-                    limit: 20
-                }
+        this.setState({ buscando: true, erroBusca: null, raioBuscado: raio })
+        const result = await geoapifyClient.get("/places", {
+            params: {
+                categories: categoria,
+                filter: `circle:${this.state.longitude},${this.state.latitude},${raio}`,
+                bias: `proximity:${this.state.longitude},${this.state.latitude}`,
+                limit: 20
+            }
+        })
+            .then(result => {
+                this.setState({ lugares: result.data.features, buscando: false })
             })
-            this.setState({ lugares: result.data.features })
-            console.log({ lugares: result.data.features })
-        } catch(erro) {
-            "Nenhum lugar encontrado",
-            erro.response?.data || erro.message
-        }
+            .catch(erro => {
+                console.log(erro)
+                this.setState({
+                    buscando: false,
+                    erroBusca: "Não foi possível consultar os lugares. Tente novamente."
+                })
+            })
+    }
+
+    obtemResumo = () => {
+        const quantidade = this.state.lugares.length
+        return quantidade == 1 ?
+            `1 Lugar encontrado em até ${this.state.raioBuscado} m`
+            :
+            `${quantidade} lugares encontrados em até ${this.state.raioBuscado} m`
     }
 
     render() {
@@ -107,13 +123,28 @@ export default class App extends React.Component {
                         }
                         </div>
                         <div className="col-12 md:col-6"> {
-                            !this.state.lugares ?
-                                null
-                                :
-                                this.state.lugares.length < 1 ?
-                                    <p>Nenhum lugar encontrado. Tente aumentar o raio.</p>
-                                    :
-                                    <ListaLugares lugares={this.state.lugares} />
+                            this.state.buscando ?
+                                <Loading mensagem="Procurando lugares..." />
+                                : this.state.erroBusca ?
+                                    <p>${this.state.erroBusca}</p>
+                                    : !this.state.lugares ?
+                                        null
+                                        : this.state.lugares.length === 0 ?
+                                            <p>Nenhum lugar encontrado. Tente aumentar o raio.</p>
+                                            :
+                                            <div>
+                                                <p><strong>{this.obtemResumo()}</strong></p>
+                                                <Cartao cabecalho="Radar">
+                                                    <MapaRadar
+                                                        latitude={this.state.latitude}
+                                                        longitude={this.state.longitude}
+                                                        lugares={this.state.lugares}
+                                                    />
+                                                </Cartao>
+                                                <div className="mt-3">
+                                                    <ListaLugares lugares={this.state.lugares} />
+                                                </div>
+                                            </div>
                         }
                         </div>
                     </div>
