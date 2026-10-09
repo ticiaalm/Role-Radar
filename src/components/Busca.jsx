@@ -2,7 +2,6 @@ import React from "react";
 import { Component } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { Search } from "@primeicons/react";
 
 const categorias = [
     { rotulo: 'Cafés', chave: 'catering.cafe' },
@@ -59,9 +58,9 @@ export default class Busca extends Component {
                     </div>
                     <InputText
                         value={this.state.raio}
-                        pt-root-onChange={this.onRaioAlterado}
+                        onChange={this.onRaioAlterado}
                         className="w-full mt-3"
-                        pt-root-placeholder={this.props.dica}
+                        placeholder={this.props.dica}
                     />
                     <Button type="submit" className='mt-3'>
                         Buscar

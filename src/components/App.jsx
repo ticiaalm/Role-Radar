@@ -4,8 +4,8 @@ import Creditos from "./Creditos"
 import Loading from "./Loading"
 import MeuPonto from "./MeuPonto"
 import geoapifyClient from "../utils/geoapifyClient"
-import { Button } from "primereact/button"
 import Busca from "./Busca"
+import ListaLugares from "./ListaLugares"
 
 const estiloSubtitulo = {
     color: '#626262',
@@ -21,7 +21,8 @@ export default class App extends React.Component {
         latitude: null,
         longitude: null,
         horarioLocalizacao: null,
-        mensagemDeErro: null
+        mensagemDeErro: null,
+        lugares: null
     }
 
     componentDidMount() {
@@ -48,15 +49,21 @@ export default class App extends React.Component {
     }
 
     onBuscaRealizada = async (categoria, raio) => {
-        const result = await geoapifyClient.get("/places", {
-            params: {
-                categories: categoria,
-                filter: `circle:${this.state.longitude},${this.state.latitude},${raio}`,
-                bias: `proximity:${this.state.longitude},${this.state.latitude}`,
-                limit: 20
-            }
-        })
-        console.log(result.data.features)
+        try {
+            const result = await geoapifyClient.get("/places", {
+                params: {
+                    categories: categoria,
+                    filter: `circle:${this.state.longitude},${this.state.latitude},${raio}`,
+                    bias: `proximity:${this.state.longitude},${this.state.latitude}`,
+                    limit: 20
+                }
+            })
+            this.setState({ lugares: result.data.features })
+            console.log({ lugares: result.data.features })
+        } catch(erro) {
+            "Nenhum lugar encontrado",
+            erro.response?.data || erro.message
+        }
     }
 
     render() {
@@ -64,46 +71,54 @@ export default class App extends React.Component {
             <div>
                 <div className='flex flex-column align-items-center p-3'>
                     <div className='flex flex-column align-items-center gap-1'>
-                        <div className='flex align-items-center gap-2'>
-                            <h1 className="titulo"><i className="pi pi-map-marker pin"></i>
-                                RolêRadar
-                            </h1>
-                        </div>
+                        <h1 className="titulo"><i className="pi pi-map-marker pin"></i>
+                            RolêRadar
+                        </h1>
                     </div>
-                    <div className="flex align-items-center">
-                        <p style={estiloSubtitulo}>Descubra o que existe perto de você</p>
-                    </div>
+                    <p style={estiloSubtitulo}>Descubra o que existe perto de você</p>
 
                     <Creditos />
 
-                    <div className="mt-4"> {
-                        this.state.mensagemDeErro ?
-                            <p className="border border-round p-3 text-center text-red-500">
-                                {this.state.mensagemDeErro}
-                            </p>
-                            :
-                            !this.state.latitude ?
-                                <Loading mensagem="Aguardando permissão de localização..." />
-                            :
-                            <div>
-                                <Cartao cabecalho="Você está aqui!">
-                                    <MeuPonto
-                                        latitude={this.state.latitude}
-                                        longitude={this.state.longitude}
-                                        horarioLocalizacao={this.state.horarioLocalizacao}
-                                        onAtualizar={this.obtemLocalizacao} />
-                                </Cartao>
-                                <br />
-                                <div className="mt-3">
-                                    <Cartao cabecalho="O que você procura?">
-                                        <Busca onBuscaRealizada={this.onBuscaRealizada} />
-                                    </Cartao>
-                                </div>
-                            </div>
-                    }
+                    <div className="grid w-full mt-4">
+                        <div className="col-12 md:col-6"> {
+                            this.state.mensagemDeErro ?
+                                <p className="border border-round p-3 text-center text-red-500">
+                                    {this.state.mensagemDeErro}
+                                </p>
+                                :
+                                !this.state.latitude ?
+                                    <Loading mensagem="Aguardando permissão de localização..." />
+                                    :
+                                    <div>
+                                        <Cartao cabecalho="Você está aqui!">
+                                            <MeuPonto
+                                                latitude={this.state.latitude}
+                                                longitude={this.state.longitude}
+                                                horarioLocalizacao={this.state.horarioLocalizacao}
+                                                onAtualizar={this.obtemLocalizacao} />
+                                        </Cartao>
+
+                                        <div className="mt-3">
+                                            <Cartao cabecalho="O que você procura?">
+                                                <Busca onBuscaRealizada={this.onBuscaRealizada} />
+                                            </Cartao>
+                                        </div>
+                                    </div>
+                        }
+                        </div>
+                        <div className="col-12 md:col-6"> {
+                            !this.state.lugares ?
+                                null
+                                :
+                                this.state.lugares.length < 1 ?
+                                    <p>Nenhum lugar encontrado. Tente aumentar o raio.</p>
+                                    :
+                                    <ListaLugares lugares={this.state.lugares} />
+                        }
+                        </div>
                     </div>
-                    <br />
-                    <footer>
+
+                    <footer className="w-full text-center mt-4">
                         RolêRadar © {obterAno()}
                     </footer>
                 </div>
